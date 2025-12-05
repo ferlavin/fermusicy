@@ -11,7 +11,7 @@ import Messages from './pages/Messages';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
-import API_URL from './config';
+import { API_URL } from './config';
 
 function App() {
   const [currentSong, setCurrentSong] = useState(null);

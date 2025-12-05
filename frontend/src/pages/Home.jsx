@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import SongList from '../components/SongList';
-import API_URL from '../config';
+import { API_URL } from './config';
 function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);

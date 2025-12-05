@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Mail, Trash2, Clock, User } from 'lucide-react';
-import API_URL from '../config';
+import { API_URL } from './config';
 function Messages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
+import API_URL from '../config';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -13,8 +14,8 @@ function Contact() {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:3000/api/contact', {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/contact`, {
+      method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

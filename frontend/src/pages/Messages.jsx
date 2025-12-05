@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Mail, Trash2, Clock, User } from 'lucide-react';
-
+import API_URL from '../config';
 function Messages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +11,7 @@ function Messages() {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/contact');
+      const response = await fetch(`${API_URL}/api/contact`);
       const data = await response.json();
       setMessages(data);
       setLoading(false);
@@ -25,8 +25,8 @@ function Messages() {
     if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return;
     
     try {
-      const response = await fetch(`http://localhost:3000/api/contact/${id}`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_URL}/api/contact/${id}`, {
+      method: 'DELETE'
       });
       
       if (response.ok) {
@@ -39,8 +39,8 @@ function Messages() {
 
   const handleMarkAsRead = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/contact/${id}/read`, {
-        method: 'PATCH'
+      const response = await fetch(`${API_URL}/api/contact/${id}/read`, {
+      method: 'PATCH'
       });
       
       if (response.ok) {

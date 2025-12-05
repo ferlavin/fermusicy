@@ -11,6 +11,7 @@ import Messages from './pages/Messages';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
+import API_URL from './config';
 
 function App() {
   const [currentSong, setCurrentSong] = useState(null);
@@ -29,7 +30,7 @@ function App() {
     const savedUser = localStorage.getItem('user');
 
     if (token && savedUser) {
-      fetch('http://localhost:3000/api/auth/verify', {
+      fetch(`${API_URL}/api/auth/verify`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +60,7 @@ function App() {
   // Cargar canciones
   useEffect(() => {
     if (isAuthenticated) {
-      fetch('http://localhost:3000/api/songs')
+      fetch(`${API_URL}/api/songs`)
         .then(res => res.json())
         .then(data => {
           setSongs(data);

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Music, Mail, Lock } from 'lucide-react';
+import API_URL from '../config';
 
 function Login({ setIsAuthenticated, setUser }) {
   const [formData, setFormData] = useState({
@@ -25,8 +26,8 @@ function Login({ setIsAuthenticated, setUser }) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },

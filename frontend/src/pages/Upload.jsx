@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Upload as UploadIcon, Music } from 'lucide-react';
+import API_URL from '../config';
 
 function Upload() {
   const [formData, setFormData] = useState({
@@ -49,8 +50,8 @@ function Upload() {
     data.append('coverUrl', formData.coverUrl);
 
     try {
-      const response = await fetch('http://localhost:3000/api/upload', {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/upload`, {
+      method: 'POST',
         body: data
       });
 

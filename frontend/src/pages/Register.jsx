@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Music, Mail, Lock, User } from 'lucide-react';
-import { API_URL } from './config';
+import { API_URL } from '../config';
 
 function Register({ setIsAuthenticated, setUser }) {
   const [formData, setFormData] = useState({

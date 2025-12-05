@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
-import { API_URL } from './config';
+import { API_URL } from '../config';
 
 function Contact() {
   const [formData, setFormData] = useState({

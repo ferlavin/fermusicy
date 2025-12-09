@@ -64,7 +64,6 @@ function Upload() {
           coverUrl: '',
           audioFile: null
         });
-        // Resetear el input file
         document.getElementById('audioFile').value = '';
         
         setTimeout(() => {
@@ -176,7 +175,16 @@ function Upload() {
             onChange={handleChange}
             required
             placeholder="Ej: Mi canción favorita"
-            style={inputStyle}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: '#282828',
+              border: '1px solid #404040',
+              borderRadius: '4px',
+              color: 'white',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
           />
         </div>
 
@@ -195,7 +203,16 @@ function Upload() {
             onChange={handleChange}
             required
             placeholder="Ej: Nombre del artista"
-            style={inputStyle}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: '#282828',
+              border: '1px solid #404040',
+              borderRadius: '4px',
+              color: 'white',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
           />
         </div>
 
@@ -213,7 +230,16 @@ function Upload() {
             value={formData.coverUrl}
             onChange={handleChange}
             placeholder="https://ejemplo.com/imagen.jpg"
-            style={inputStyle}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              background: '#282828',
+              border: '1px solid #404040',
+              borderRadius: '4px',
+              color: 'white',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
           />
         </div>
 
@@ -244,17 +270,5 @@ function Upload() {
     </div>
   );
 }
-
-const inputStyle = {
-  width: '100%',
-  padding: '0.75rem',
-  background: '#282828',
-  border: '1px solid #404040',
-  borderRadius: '4px',
-  color: 'white',
-  fontSize: '1rem',
-  outline: 'none',
-  transition: 'border-color 0.2s'
-};
 
 export default Upload;

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Search } from 'lucide-react';
+import { useState } from 'react';
 import SongList from '../components/SongList';
 
 function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
@@ -7,7 +8,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
   const [filteredSongs, setFilteredSongs] = useState([]);
 
   useEffect(() => {
-    // Recargar canciones cuando volvemos a Home
     fetch('http://localhost:3000/api/songs')
       .then(res => res.json())
       .then(data => {
@@ -20,7 +20,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
   }, [setSongs]);
 
   useEffect(() => {
-    // Filtrar canciones cuando cambia el término de búsqueda
     if (searchTerm.trim() === '') {
       setFilteredSongs(songs);
     } else {
@@ -42,7 +41,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
   };
 
   const handleDelete = (songId) => {
-    // Actualizar la lista de canciones
     const updatedSongs = songs.filter(s => s.id !== songId);
     setSongs(updatedSongs);
     setFilteredSongs(updatedSongs.filter(song => 
@@ -50,7 +48,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
       song.artist.toLowerCase().includes(searchTerm.toLowerCase())
     ));
 
-    // Si la canción eliminada es la que está sonando, detenerla
     if (currentSong && currentSong.id === songId) {
       setCurrentSong(null);
       setIsPlaying(false);
@@ -81,7 +78,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
           Escuchá tu música favorita
         </p>
 
-        {/* Buscador */}
         <div style={{
           position: 'relative',
           maxWidth: '600px',
@@ -139,7 +135,6 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
           )}
         </div>
 
-        {/* Resultados de búsqueda */}
         {searchTerm && (
           <p style={{ 
             color: '#b3b3b3', 

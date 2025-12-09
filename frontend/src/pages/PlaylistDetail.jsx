@@ -1,392 +1,119 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Trash2, Plus } from 'lucide-react';
+import { API_URL } from '../config';
+import './PlaylistDetail.css';
 
 function PlaylistDetail({ setCurrentSong, setIsPlaying, currentSong }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [playlist, setPlaylist] = useState(null);
-  const [allSongs, setAllSongs] = useState([]);
+  const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchPlaylist();
-    fetchAllSongs();
+    fetchPlaylistDetails();
   }, [id]);
 
-  const fetchPlaylist = async () => {
+  const fetchPlaylistDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/playlists/${id}`);
+      setLoading(true);
+      const response = await fetch(`${API_URL}/playlists/${id}`);
+      if (!response.ok) throw new Error('Error al cargar la playlist');
       const data = await response.json();
       setPlaylist(data);
+      setSongs(data.canciones || []); // <- usa 'canciones' que viene del backend
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      setLoading(false);
     }
   };
 
-  const fetchAllSongs = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/songs');
-      const data = await response.json();
-      setAllSongs(data);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  const handleAddSong = async (cancionId) => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/playlists/${id}/songs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ cancionId })
-      });
-
-      if (response.ok) {
-        fetchPlaylist();
-        setShowAddModal(false);
-      } else {
-        const data = await response.json();
-        alert(data.error);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  const handleRemoveSong = async (cancionId) => {
-    if (!window.confirm('¿Eliminar esta canción de la playlist?')) return;
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/playlists/${id}/songs/${cancionId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        fetchPlaylist();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
-  const handlePlaySong = (song) => {
+  const handlePlay = (song) => {
     setCurrentSong(song);
     setIsPlaying(true);
   };
 
+  const handleRemoveSong = async (songId) => {
+    try {
+      const response = await fetch(`${API_URL}/playlists/${id}/songs/${songId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Error al eliminar la canción');
+      fetchPlaylistDetails();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '60vh',
-        fontSize: '1.5rem'
-      }}>
-        Cargando playlist...
+      <div className="playlist-detail-container">
+        <p>Cargando playlist...</p>
       </div>
     );
   }
 
-  if (!playlist) {
+  if (error) {
     return (
-      <div style={{ padding: '2rem' }}>
-        <p>Playlist no encontrada</p>
+      <div className="playlist-detail-container">
+        <p className="error">{error}</p>
+        <button onClick={() => navigate('/playlists')}>Volver a Playlists</button>
       </div>
     );
   }
-
-  const availableSongs = allSongs.filter(
-    song => !playlist.canciones.some(ps => ps.id === song.id)
-  );
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <button
-        onClick={() => navigate('/playlists')}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: '#b3b3b3',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '1rem',
-          marginBottom: '2rem',
-          padding: '0.5rem',
-          transition: 'color 0.2s'
-        }}
-        onMouseOver={(e) => e.target.style.color = 'white'}
-        onMouseOut={(e) => e.target.style.color = '#b3b3b3'}
-      >
-        <ArrowLeft size={20} />
-        Volver a playlists
+    <div className="playlist-detail-container">
+      <button className="back-button" onClick={() => navigate('/playlists')}>
+        ← Volver a Playlists
       </button>
 
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '2rem'
-      }}>
-        <div>
-          <h1 style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
-            {playlist.nombre}
-          </h1>
-          {playlist.descripcion && (
-            <p style={{ color: '#b3b3b3', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-              {playlist.descripcion}
-            </p>
-          )}
-          <p style={{ color: '#b3b3b3', fontSize: '0.9rem' }}>
-            {playlist.canciones.length} {playlist.canciones.length === 1 ? 'canción' : 'canciones'}
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowAddModal(true)}
-          style={{
-            background: '#1DB954',
-            color: 'white',
-            border: 'none',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '24px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          <Plus size={20} />
-          Agregar Canción
-        </button>
-      </div>
-
-      {playlist.canciones.length === 0 ? (
-        <div style={{
-          background: '#181818',
-          padding: '3rem',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <p style={{ color: '#b3b3b3', fontSize: '1.1rem', marginBottom: '1rem' }}>
-            Esta playlist está vacía
-          </p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              background: '#1DB954',
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '24px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            Agregar tu primera canción
-          </button>
-        </div>
-      ) : (
-        <div style={{ background: '#181818', borderRadius: '8px', overflow: 'hidden' }}>
-          {playlist.canciones.map((song, index) => (
-            <div
-              key={song.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '1rem',
-                borderBottom: index < playlist.canciones.length - 1 ? '1px solid #282828' : 'none',
-                transition: 'background 0.2s',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = '#282828'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{
-                width: '40px',
-                textAlign: 'center',
-                color: '#b3b3b3',
-                marginRight: '1rem'
-              }}>
-                {index + 1}
-              </div>
-
-              <img
-                src={song.cover}
-                alt={song.title}
-                style={{
-                  width: '50px',
-                  height: '50px',
-                  borderRadius: '4px',
-                  marginRight: '1rem'
-                }}
-              />
-
-              <div style={{ flex: 1 }} onClick={() => handlePlaySong(song)}>
-                <div style={{
-                  fontWeight: currentSong?.id === song.id ? 'bold' : 'normal',
-                  color: currentSong?.id === song.id ? '#1DB954' : 'white',
-                  marginBottom: '0.25rem'
-                }}>
-                  {song.title}
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>
-                  {song.artist}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePlaySong(song);
-                  }}
-                  style={{
-                    background: currentSong?.id === song.id ? '#1DB954' : '#282828',
-                    border: 'none',
-                    borderRadius: '50%',
-                    padding: '0.75rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Play size={18} color="white" />
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveSong(song.id);
-                  }}
-                  style={{
-                    background: '#282828',
-                    border: 'none',
-                    borderRadius: '50%',
-                    padding: '0.75rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Trash2 size={18} color="#f44336" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showAddModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}
-          onClick={() => setShowAddModal(false)}
-        >
-          <div
-            style={{
-              background: '#282828',
-              padding: '2rem',
-              borderRadius: '12px',
-              maxWidth: '600px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem' }}>
-              Agregar Canciones
-            </h2>
-
-            {availableSongs.length === 0 ? (
-              <p style={{ color: '#b3b3b3', textAlign: 'center', padding: '2rem' }}>
-                Todas las canciones ya están en esta playlist
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {availableSongs.map(song => (
-                  <div
-                    key={song.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '1rem',
-                      background: '#181818',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.background = '#202020'}
-                    onMouseOut={(e) => e.currentTarget.style.background = '#181818'}
-                    onClick={() => handleAddSong(song.id)}
-                  >
-                    <img
-                      src={song.cover}
-                      alt={song.title}
-                      style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '4px',
-                        marginRight: '1rem'
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                        {song.title}
-                      </div>
-                      <div style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>
-                        {song.artist}
-                      </div>
-                    </div>
-                    <Plus size={24} style={{ color: '#1DB954' }} />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={() => setShowAddModal(false)}
-              style={{
-                marginTop: '1.5rem',
-                width: '100%',
-                background: 'transparent',
-                border: '1px solid #404040',
-                color: 'white',
-                padding: '0.75rem',
-                borderRadius: '24px',
-                fontSize: '1rem',
-                cursor: 'pointer'
-              }}
-            >
-              Cerrar
-            </button>
+      {playlist && (
+        <>
+          <div className="playlist-header">
+            <h1>{playlist.nombre}</h1>
+            {playlist.descripcion && <p>{playlist.descripcion}</p>}
+            <p className="song-count">{songs.length} canciones</p>
           </div>
-        </div>
+
+          {songs.length === 0 ? (
+            <p className="no-songs">Esta playlist está vacía</p>
+          ) : (
+            <div className="songs-list">
+              {songs.map((song, index) => (
+                <div 
+                  key={song.id}
+                  className={`song-item ${currentSong?.id === song.id ? 'playing' : ''}`}
+                >
+                  <span className="song-number">{index + 1}</span>
+                  <div className="song-info">
+                    <h3>{song.title}</h3>
+                    <p>{song.artist}</p>
+                  </div>
+                  <div className="song-actions">
+                    <button 
+                      onClick={() => handlePlay(song)}
+                      className="play-button"
+                    >
+                      {currentSong?.id === song.id ? '⏸' : '▶'}
+                    </button>
+                    <button 
+                      onClick={() => handleRemoveSong(song.id)}
+                      className="remove-button"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
-      </div>
-);
+    </div>
+  );
 }
+
+export default PlaylistDetail;

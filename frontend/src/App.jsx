@@ -7,7 +7,11 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Upload from './pages/Upload';
+import Messages from './pages/Messages';
+import Playlists from './pages/Playlists';
+import PlaylistDetail from './pages/PlaylistDetail';
 import { API_URL } from './config';
+import './App.css';
 
 function App() {
   const [currentSong, setCurrentSong] = useState(null);
@@ -15,22 +19,26 @@ function App() {
   const [songs, setSongs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [shuffle, setShuffle] = useState(false);
-  const [repeat, setRepeat] = useState(false);
+  const [repeat, setRepeat] = useState('off');
 
   useEffect(() => {
-    fetch(`${API_URL}/api/songs`)
-      .then(res => res.json())
-      .then(data => {
-        setSongs(data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+    const fetchSongs = async () => {
+      try {
+        const response = await fetch(`${API_URL}/songs`);
+        const data = await response.json();
+        setSongs(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching songs:', error);
+        setSongs([]);
+      }
+    };
+
+    fetchSongs();
   }, []);
 
   const handleSongSelect = (song) => {
-    const index = songs.findIndex(s => s.id === song.id);
-    setCurrentIndex(index);
+    const index = songs.findIndex(s => s._id === song._id || s.id === song.id);
+    setCurrentIndex(index >= 0 ? index : 0);
     setCurrentSong(song);
     setIsPlaying(true);
   };
@@ -39,7 +47,6 @@ function App() {
     if (songs.length === 0) return;
     
     let nextIndex;
-    
     if (shuffle) {
       do {
         nextIndex = Math.floor(Math.random() * songs.length);
@@ -57,7 +64,6 @@ function App() {
     if (songs.length === 0) return;
     
     let prevIndex;
-    
     if (shuffle) {
       do {
         prevIndex = Math.floor(Math.random() * songs.length);
@@ -72,11 +78,25 @@ function App() {
   };
 
   return (
-    <Router>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh', 
+        background: '#121212',
+        overflow: 'hidden'
+      }}>
         <Navbar />
         
-        <main style={{ flex: 1, paddingBottom: currentSong ? '100px' : '0' }}>
+        <main 
+          className={currentSong ? 'with-player' : ''} 
+          style={{ 
+            flex: 1, 
+            background: '#121212',
+            overflow: 'auto',
+            paddingBottom: currentSong ? '100px' : '0'
+          }}
+        >
           <Routes>
             <Route 
               path="/" 
@@ -93,6 +113,18 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/playlists" element={<Playlists />} />
+            <Route 
+              path="/playlists/:id" 
+              element={
+                <PlaylistDetail 
+                  setCurrentSong={handleSongSelect}
+                  setIsPlaying={setIsPlaying}
+                  currentSong={currentSong}
+                />
+              } 
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

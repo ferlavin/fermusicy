@@ -1,0 +1,166 @@
+.playlist-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.back-button {
+  background: #1db954;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: background 0.3s;
+}
+
+.back-button:hover {
+  background: #1ed760;
+}
+
+.playlist-header {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  color: white;
+}
+
+.playlist-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+}
+
+.playlist-header p {
+  margin: 0.5rem 0;
+  opacity: 0.9;
+}
+
+.song-count {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.no-songs {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.songs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  transition: all 0.3s;
+  gap: 1rem;
+}
+
+.song-item:hover {
+  background: #e8e8e8;
+  transform: translateX(5px);
+}
+
+.song-item.playing {
+  background: #e7f5ec;
+  border-left: 4px solid #1db954;
+}
+
+.song-number {
+  font-weight: bold;
+  color: #666;
+  min-width: 30px;
+  text-align: center;
+}
+
+.song-info {
+  flex: 1;
+}
+
+.song-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.song-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.song-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.play-button,
+.remove-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.play-button {
+  color: #1db954;
+}
+
+.play-button:hover {
+  background: #e7f5ec;
+}
+
+.remove-button {
+  color: #e74c3c;
+}
+
+.remove-button:hover {
+  background: #fee;
+}
+
+.error {
+  color: #e74c3c;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .playlist-detail-container {
+    padding: 1rem;
+  }
+
+  .playlist-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .song-item {
+    padding: 0.75rem;
+  }
+
+  .song-info h3 {
+    font-size: 1rem;
+  }
+
+  .song-number {
+    min-width: 25px;
+  }
+}

@@ -8,7 +8,7 @@ function SongList({ songs, onSongClick, currentSong, onDelete }) {
       gap: '1.5rem',
       padding: '2rem'
     }}>
-      {songs.map(song => (
+      {(songs || []).map(song => (
         <SongItem 
           key={song.id} 
           song={song} 

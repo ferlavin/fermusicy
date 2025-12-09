@@ -1,33 +1,50 @@
-import { Play, Pause, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Play, Pause, Trash2, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-function SongItem({ song, onClick, isActive, onDelete }) {
+function SongItem({ song, onClick, isActive, onDelete, onAddedToPlaylist }) {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [playlists, setPlaylists] = useState([]);
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    // Carga playlists una sola vez
+    fetch('http://localhost:3000/api/playlists')
+      .then(r => r.json())
+      .then(setPlaylists)
+      .catch(() => setPlaylists([]));
+  }, []);
+
+  const handleAddToPlaylist = async (playlistId, e) => {
+    e.stopPropagation();
+    setAdding(true);
+    try {
+      const resp = await fetch(`http://localhost:3000/api/playlists/${playlistId}/songs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cancionId: song.id })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'No se pudo agregar');
+      setShowPicker(false);
+      if (onAddedToPlaylist) onAddedToPlaylist(); // 🔁 refresca en el padre
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const handleDelete = async (e) => {
-    e.stopPropagation(); // Evitar que se reproduzca la canción al eliminar
-    
-    if (!window.confirm(`¿Estás seguro de eliminar "${song.title}"?`)) {
-      return;
-    }
-
+    e.stopPropagation();
+    if (!window.confirm(`¿Estás seguro de eliminar "${song.title}"?`)) return;
     setDeleting(true);
-    
     try {
-      const response = await fetch(`http://localhost:3000/api/songs/${song.id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        if (onDelete) {
-          onDelete(song.id);
-        }
-      } else {
-        alert('Error al eliminar la canción');
-      }
-    } catch (error) {
-      console.error('Error:', error);
+      const response = await fetch(`http://localhost:3000/api/songs/${song.id}`, { method: 'DELETE' });
+      if (response.ok && onDelete) onDelete(song.id);
+      else alert('Error al eliminar la canción');
+    } catch {
       alert('Error al eliminar la canción');
     } finally {
       setDeleting(false);
@@ -99,6 +116,72 @@ function SongItem({ song, onClick, isActive, onDelete }) {
           fontWeight: 'bold'
         }}>
           Eliminando...
+        </div>
+      )}
+
+      {/* Botón agregar a playlist */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowPicker(!showPicker); }}
+        style={{
+          position: 'absolute',
+          top: '0.5rem',
+          left: '0.5rem',
+          background: '#1DB954',
+          border: 'none',
+          borderRadius: '50%',
+          padding: '0.5rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10
+        }}
+        title="Agregar a playlist"
+      >
+        <Plus size={16} color="white" />
+      </button>
+
+      {showPicker && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            top: '2.5rem',
+            left: '0.5rem',
+            background: '#121212',
+            border: '1px solid #333',
+            borderRadius: '8px',
+            padding: '0.5rem',
+            zIndex: 20,
+            minWidth: '180px'
+          }}
+        >
+          <div style={{ color: '#b3b3b3', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+            Selecciona playlist
+          </div>
+          <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'grid', gap: '0.35rem' }}>
+            {playlists.length === 0 && (
+              <div style={{ color: '#777', fontSize: '0.85rem' }}>No hay playlists</div>
+            )}
+            {playlists.map((pl) => (
+              <button
+                key={pl.id}
+                onClick={(e) => handleAddToPlaylist(pl.id, e)}
+                disabled={adding}
+                style={{
+                  textAlign: 'left',
+                  background: '#1e1e1e',
+                  border: '1px solid #333',
+                  borderRadius: '6px',
+                  padding: '0.5rem',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                {pl.nombre}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { useState } from 'react';
 import SongList from '../components/SongList';
 
-function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
+function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);
 
@@ -11,15 +11,21 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
     fetch('http://localhost:3000/api/songs')
       .then(res => res.json())
       .then(data => {
-        setSongs(data);
-        setFilteredSongs(data);
+        setSongs(data || []);
+        setFilteredSongs(data || []);
       })
       .catch(error => {
         console.error('Error:', error);
+        setSongs([]);
+        setFilteredSongs([]);
       });
   }, [setSongs]);
 
   useEffect(() => {
+    if (!Array.isArray(songs)) {
+      return;
+    }
+    
     if (searchTerm.trim() === '') {
       setFilteredSongs(songs);
     } else {
@@ -36,25 +42,16 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
     setIsPlaying(true);
   };
 
+  const handleDeleteSong = (songId) => {
+    setSongs(songs.filter(song => song.id !== songId));
+    setFilteredSongs(filteredSongs.filter(song => song.id !== songId));
+  };
+
   const handleClearSearch = () => {
     setSearchTerm('');
   };
 
-  const handleDelete = (songId) => {
-    const updatedSongs = songs.filter(s => s.id !== songId);
-    setSongs(updatedSongs);
-    setFilteredSongs(updatedSongs.filter(song => 
-      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      song.artist.toLowerCase().includes(searchTerm.toLowerCase())
-    ));
-
-    if (currentSong && currentSong.id === songId) {
-      setCurrentSong(null);
-      setIsPlaying(false);
-    }
-  };
-
-  if (songs.length === 0) {
+  if (!Array.isArray(songs) || songs.length === 0) {
     return (
       <div style={{ 
         display: 'flex', 
@@ -184,10 +181,10 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs, setSongs }) {
         </div>
       ) : (
         <SongList 
-          songs={filteredSongs} 
+          songs={filteredSongs}
           onSongClick={handleSongClick}
           currentSong={currentSong}
-          onDelete={handleDelete}
+          onDelete={handleDeleteSong}
         />
       )}
     </div>

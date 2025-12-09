@@ -1,21 +1,59 @@
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Shuffle } from 'lucide-react';
+import './Player.css';
 
-function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, hasPrevious, shuffle, setShuffle, repeat, setRepeat }) {
+function Player({ 
+  song, 
+  isPlaying, 
+  setIsPlaying, 
+  onNext, 
+  onPrevious, 
+  hasNext, 
+  hasPrevious,
+  shuffle,
+  setShuffle,
+  repeat,
+  setRepeat
+}) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const audioRef = useRef(null);
 
+  // Cargar y reproducir cuando cambia la canción o isPlaying
   useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play();
-      } else {
-        audioRef.current.pause();
-      }
+    if (!audioRef.current || !song) return;
+
+    let audioUrl = song.file;
+    if (audioUrl && !audioUrl.startsWith('http')) {
+      audioUrl = `http://localhost:3000${audioUrl}`;
     }
-  }, [isPlaying, song]);
+
+    audioRef.current.src = audioUrl;
+    setCurrentTime(0);
+    setDuration(0);
+
+    const onCanPlay = () => {
+      if (isPlaying) {
+        audioRef.current.play().catch(err => console.error('Error al reproducir:', err.message));
+      }
+    };
+
+    audioRef.current.addEventListener('canplay', onCanPlay);
+
+    return () => {
+      audioRef.current.removeEventListener('canplay', onCanPlay);
+    };
+  }, [song]); // 🔑 solo cuando cambia la canción
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.play().catch(err => console.error('Error al reproducir:', err.message));
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -48,6 +86,8 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  if (!song) return null;
+
   return (
     <div style={{
       position: 'fixed',
@@ -61,7 +101,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
     }}>
       <audio
         ref={audioRef}
-        src={song.file}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={() => {
@@ -107,7 +146,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
           gap: '0.5rem',
           alignItems: 'center'
         }}>
-          {/* Botón Shuffle */}
           <button 
             onClick={() => setShuffle(!shuffle)}
             style={{
@@ -120,7 +158,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
             <Shuffle size={18} />
           </button>
 
-          {/* Botón Anterior */}
           <button 
             onClick={onPrevious}
             disabled={!hasPrevious}
@@ -133,7 +170,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
             <SkipBack size={20} />
           </button>
           
-          {/* Botón Play/Pause */}
           <button 
             onClick={togglePlay}
             style={{
@@ -146,7 +182,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
             {isPlaying ? <Pause size={24} /> : <Play size={24} />}
           </button>
           
-          {/* Botón Siguiente */}
           <button 
             onClick={onNext}
             disabled={!hasNext}
@@ -159,7 +194,6 @@ function Player({ song, isPlaying, setIsPlaying, onNext, onPrevious, hasNext, ha
             <SkipForward size={20} />
           </button>
 
-          {/* Botón Repeat */}
           <button 
             onClick={() => setRepeat(!repeat)}
             style={{

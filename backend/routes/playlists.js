@@ -105,42 +105,47 @@ router.post('/', async (req, res) => {
 // Agregar canción a playlist
 router.post('/:id/songs', async (req, res) => {
   try {
-    const { cancionId } = req.body;
+    const playlistId = Number(req.params.id);
+    const cancionId = Number(req.body.cancionId);
+    if (!Number.isFinite(playlistId) || !Number.isFinite(cancionId)) {
+      return res.status(400).json({ error: 'IDs inválidos' });
+    }
 
     const [playlists] = await pool.query(
       'SELECT * FROM playlists WHERE id = ? AND usuario_id = ?',
-      [req.params.id, FIXED_USER_ID]
+      [playlistId, FIXED_USER_ID]
     );
-
     if (playlists.length === 0) {
       return res.status(404).json({ error: 'Playlist no encontrada' });
     }
 
+    // Verifica que la canción exista en songs.json
+    const songsPath = path.join(__dirname, '../data/songs.json');
+    const allSongs = JSON.parse(await fs.readFile(songsPath, 'utf-8'));
+    if (!allSongs.find(s => s.id === cancionId)) {
+      return res.status(404).json({ error: 'Canción no encontrada' });
+    }
+
     const [existing] = await pool.query(
       'SELECT * FROM playlist_canciones WHERE playlist_id = ? AND cancion_id = ?',
-      [req.params.id, cancionId]
+      [playlistId, cancionId]
     );
-
     if (existing.length > 0) {
       return res.status(400).json({ error: 'La canción ya está en la playlist' });
     }
 
     const [maxOrder] = await pool.query(
       'SELECT MAX(orden) as maxOrden FROM playlist_canciones WHERE playlist_id = ?',
-      [req.params.id]
+      [playlistId]
     );
-
     const newOrder = (maxOrder[0].maxOrden || 0) + 1;
 
     await pool.query(
       'INSERT INTO playlist_canciones (playlist_id, cancion_id, orden) VALUES (?, ?, ?)',
-      [req.params.id, cancionId, newOrder]
+      [playlistId, cancionId, newOrder]
     );
 
-    res.json({
-      success: true,
-      message: 'Canción agregada a la playlist'
-    });
+    res.json({ success: true, message: 'Canción agregada a la playlist' });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Error al agregar canción' });
@@ -174,7 +179,7 @@ router.delete('/:id/songs/:cancionId', async (req, res) => {
   }
 });
 
-// Eliminar playlist
+// Eliminar playlist (deja solo una definición)
 router.delete('/:id', async (req, res) => {
   try {
     const [playlists] = await pool.query(
@@ -198,27 +203,12 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-  router.delete('/:id', async (req, res) => {
-  try {
-    const [playlists] = await pool.query(
-      'SELECT * FROM playlists WHERE id = ? AND usuario_id = ?',
-      [req.params.id, FIXED_USER_ID]
-    );
-
-    if (playlists.length === 0) {
-      return res.status(404).json({ error: 'Playlist no encontrada' });
-    }
-
-    await pool.query('DELETE FROM playlists WHERE id = ?', [req.params.id]);
-
-    res.json({
-      success: true,
-      message: 'Playlist eliminada'
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error al eliminar playlist' });
-  }
-});
+async function addSongToPlaylist(playlistId, songId) {
+  await fetch(`http://localhost:3000/api/playlists/${playlistId}/songs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cancionId: songId })
+  });
+}
 
 export default router;

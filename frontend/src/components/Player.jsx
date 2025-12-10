@@ -24,12 +24,8 @@ function Player({
   useEffect(() => {
     if (!audioRef.current || !song) return;
 
-    let audioUrl = song.file;
-    if (audioUrl && !audioUrl.startsWith('http')) {
-      audioUrl = `http://localhost:3000${audioUrl}`;
-    }
-
-    audioRef.current.src = audioUrl;
+    // Usar directamente la URL del archivo
+    audioRef.current.src = song.file;
     setCurrentTime(0);
     setDuration(0);
 

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/songs.json",
+      "destination": "https://raw.githubusercontent.com/ferlavin/fermusicy/main/backend/data/songs.json"
+    }
+  ]
+}

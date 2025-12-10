@@ -7,7 +7,7 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);
 
-  const SONGS_URL = 'https://cdn.jsdelivr.net/gh/ferlavin/fermusicy/backend/data/songs.json';
+  const SONGS_URL = '/songs.json';
 
   useEffect(() => {
     fetch(SONGS_URL)

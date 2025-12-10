@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
-import './Player.css';
 
 export default function Player({ 
   currentSong, 
@@ -28,28 +27,14 @@ export default function Player({
         });
       }
     }
-  }, [currentSong]); // 🔑 solo cuando cambia la canción
-
-  useEffect(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.play();
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying]);
+  }, [currentSong, isPlaying]); // 🔑 solo cuando cambia la canción
 
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
+    setCurrentTime(audioRef.current.currentTime);
   };
 
   const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
-    }
+    setDuration(audioRef.current.duration);
   };
 
   const handleEnded = () => {
@@ -58,22 +43,14 @@ export default function Player({
 
   const handleSeek = (e) => {
     const newTime = (e.target.value / 100) * duration;
-    if (audioRef.current) {
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   const handleVolumeChange = (e) => {
     const newVolume = e.target.value / 100;
     setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-  };
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
+    audioRef.current.volume = newVolume;
   };
 
   const formatTime = (time) => {
@@ -99,15 +76,15 @@ export default function Player({
       <div className="max-w-screen-xl mx-auto">
         {/* Info de la canción */}
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-1">
             <img
               src={currentSong.cover}
               alt={currentSong.title}
               className="w-14 h-14 rounded"
             />
-            <div>
-              <h3 className="text-white font-semibold">{currentSong.title}</h3>
-              <p className="text-gray-400 text-sm">{currentSong.artist}</p>
+            <div className="min-w-0">
+              <h3 className="text-white font-semibold truncate">{currentSong.title}</h3>
+              <p className="text-gray-400 text-sm truncate">{currentSong.artist}</p>
             </div>
           </div>
 
@@ -115,52 +92,52 @@ export default function Player({
           <div className="flex items-center space-x-4">
             <button
               onClick={onPrev}
-              className="text-gray-400 hover:text-white transition"
+              className="text-gray-400 hover:text-white"
             >
-              <SkipBack size={24} />
+              <SkipBack size={20} />
             </button>
             
             <button
-              onClick={togglePlayPause}
-              className="bg-white text-black rounded-full p-2 hover:scale-105 transition"
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="bg-green-500 text-white rounded-full p-2 hover:bg-green-600"
             >
-              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
             </button>
             
             <button
               onClick={onNext}
-              className="text-gray-400 hover:text-white transition"
+              className="text-gray-400 hover:text-white"
             >
-              <SkipForward size={24} />
+              <SkipForward size={20} />
             </button>
           </div>
 
           {/* Control de volumen */}
-          <div className="flex items-center space-x-2">
-            <Volume2 className="text-gray-400" size={20} />
+          <div className="flex items-center space-x-2 ml-4">
+            <Volume2 size={16} className="text-gray-400" />
             <input
               type="range"
               min="0"
               max="100"
               value={volume * 100}
               onChange={handleVolumeChange}
-              className="w-24 accent-green-500"
+              className="w-20"
             />
           </div>
         </div>
 
         {/* Barra de progreso */}
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
+          <span className="text-xs text-gray-400 w-10">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max="100"
             value={progress}
             onChange={handleSeek}
-            className="flex-1 accent-green-500"
+            className="flex-1"
           />
-          <span className="text-xs text-gray-400">{formatTime(duration)}</span>
+          <span className="text-xs text-gray-400 w-10">{formatTime(duration)}</span>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, VolumePlus, Repeat2, Shuffle } from 'lucide-react';
 import './Player.css';
 
 export default function Player({ 
@@ -13,6 +13,8 @@ export default function Player({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [repeat, setRepeat] = useState('off'); // off, one, all
+  const [shuffle, setShuffle] = useState(false);
 
   useEffect(() => {
     if (audioRef.current && currentSong) {
@@ -47,7 +49,12 @@ export default function Player({
   };
 
   const handleEnded = () => {
-    onNext();
+    if (repeat === 'one') {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    } else {
+      onNext();
+    }
   };
 
   const handleSeek = (e) => {
@@ -58,6 +65,28 @@ export default function Player({
 
   const handleVolumeChange = (e) => {
     const newVolume = e.target.value / 100;
+    setVolume(newVolume);
+    audioRef.current.volume = newVolume;
+  };
+
+  const toggleRepeat = () => {
+    const modes = ['off', 'one', 'all'];
+    const currentIndex = modes.indexOf(repeat);
+    setRepeat(modes[(currentIndex + 1) % modes.length]);
+  };
+
+  const toggleShuffle = () => {
+    setShuffle(!shuffle);
+  };
+
+  const decreaseVolume = () => {
+    const newVolume = Math.max(0, volume - 0.1);
+    setVolume(newVolume);
+    audioRef.current.volume = newVolume;
+  };
+
+  const increaseVolume = () => {
+    const newVolume = Math.min(1, volume + 0.1);
     setVolume(newVolume);
     audioRef.current.volume = newVolume;
   };
@@ -112,6 +141,14 @@ export default function Player({
         {/* Centro - Controles */}
         <div className="player-center">
           <div className="player-controls">
+            <button 
+              className={`control-btn ${shuffle ? 'active' : ''}`}
+              onClick={toggleShuffle}
+              title="Aleatorio"
+            >
+              <Shuffle size={20} />
+            </button>
+
             <button className="control-btn" onClick={onPrev}>
               <SkipBack size={20} />
             </button>
@@ -125,6 +162,15 @@ export default function Player({
             
             <button className="control-btn" onClick={onNext}>
               <SkipForward size={20} />
+            </button>
+
+            <button 
+              className={`control-btn ${repeat !== 'off' ? 'active' : ''}`}
+              onClick={toggleRepeat}
+              title={`Repetir: ${repeat}`}
+            >
+              <Repeat2 size={20} />
+              {repeat === 'one' && <span className="repeat-badge">1</span>}
             </button>
           </div>
 
@@ -145,9 +191,12 @@ export default function Player({
           </div>
         </div>
 
-        {/* Derecha - Volumen */}
+        {/* Derecha - Controles de volumen */}
         <div className="player-right">
-          <Volume2 size={18} className="volume-icon" />
+          <button className="volume-btn" onClick={decreaseVolume}>
+            <VolumeX size={18} />
+          </button>
+
           <input
             type="range"
             min="0"
@@ -156,6 +205,10 @@ export default function Player({
             onChange={handleVolumeChange}
             className="volume-slider"
           />
+
+          <button className="volume-btn" onClick={increaseVolume}>
+            <VolumePlus size={18} />
+          </button>
         </div>
       </div>
     </div>

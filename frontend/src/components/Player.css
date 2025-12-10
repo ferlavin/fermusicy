@@ -159,6 +159,57 @@
   border: none;
 }
 
+/* Estilos personalizados para el reproductor */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track del slider */
+input[type="range"]::-webkit-slider-track {
+  background: #4d4d4d;
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #4d4d4d;
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* Thumb del slider */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #1db954;
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #1db954;
+  cursor: pointer;
+  border: none;
+}
+
+/* Hover effects */
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: #1ed760;
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  background: #1ed760;
+}
+
 @media (max-width: 768px) {
   .player {
     flex-wrap: wrap;

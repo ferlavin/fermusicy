@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
+import './Player.css';
 
 export default function Player({ 
   currentSong, 
@@ -27,7 +28,17 @@ export default function Player({
         });
       }
     }
-  }, [currentSong, isPlaying]); // 🔑 solo cuando cambia la canción
+  }, [currentSong]); // 🔑 solo cuando cambia la canción
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
 
   const handleTimeUpdate = () => {
     setCurrentTime(audioRef.current.currentTime);
@@ -53,6 +64,10 @@ export default function Player({
     audioRef.current.volume = newVolume;
   };
 
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
   const formatTime = (time) => {
     if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
@@ -65,96 +80,79 @@ export default function Player({
   const progress = (currentTime / duration) * 100 || 0;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800">
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
       />
-
-      {/* Barra de progreso */}
-      <div className="h-1 bg-gray-700 hover:bg-green-500 cursor-pointer group">
-        <div
-          className="h-full bg-green-500 transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="px-6 py-4">
-        {/* Fila principal: Info + Controles + Volumen */}
-        <div className="flex items-center justify-between">
-          {/* Info de la canción - Izquierda */}
-          <div className="flex items-center w-1/4">
+      
+      <div className="max-w-screen-xl mx-auto">
+        {/* Info de la canción */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-4">
             <img
               src={currentSong.cover}
               alt={currentSong.title}
               className="w-14 h-14 rounded"
             />
-            <div className="ml-4 min-w-0">
-              <h3 className="text-white font-semibold text-sm truncate">
-                {currentSong.title}
-              </h3>
-              <p className="text-gray-400 text-xs truncate">{currentSong.artist}</p>
+            <div>
+              <h3 className="text-white font-semibold">{currentSong.title}</h3>
+              <p className="text-gray-400 text-sm">{currentSong.artist}</p>
             </div>
           </div>
 
-          {/* Controles - Centro */}
-          <div className="flex flex-col items-center gap-2 flex-1">
-            <div className="flex items-center gap-6">
-              <button
-                onClick={onPrev}
-                className="text-gray-400 hover:text-white transition"
-              >
-                <SkipBack size={20} fill="currentColor" />
-              </button>
-
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="bg-white text-black rounded-full p-3 hover:scale-110 transition w-10 h-10 flex items-center justify-center"
-              >
-                {isPlaying ? (
-                  <Pause size={20} fill="currentColor" />
-                ) : (
-                  <Play size={20} fill="currentColor" className="ml-0.5" />
-                )}
-              </button>
-
-              <button
-                onClick={onNext}
-                className="text-gray-400 hover:text-white transition"
-              >
-                <SkipForward size={20} fill="currentColor" />
-              </button>
-            </div>
-
-            {/* Tiempo - Debajo de controles */}
-            <div className="flex items-center gap-2 text-xs text-gray-400 w-64">
-              <span className="w-10 text-right">{formatTime(currentTime)}</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={handleSeek}
-                className="flex-1 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-green-500"
-              />
-              <span className="w-10">{formatTime(duration)}</span>
-            </div>
+          {/* Controles */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={onPrev}
+              className="text-gray-400 hover:text-white transition"
+            >
+              <SkipBack size={24} />
+            </button>
+            
+            <button
+              onClick={togglePlayPause}
+              className="bg-white text-black rounded-full p-2 hover:scale-105 transition"
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+            
+            <button
+              onClick={onNext}
+              className="text-gray-400 hover:text-white transition"
+            >
+              <SkipForward size={24} />
+            </button>
           </div>
 
-          {/* Control de volumen - Derecha */}
-          <div className="flex items-center justify-end gap-2 w-1/4">
-            <Volume2 size={18} className="text-gray-400" />
+          {/* Control de volumen */}
+          <div className="flex items-center space-x-2">
+            <Volume2 className="text-gray-400" size={20} />
             <input
               type="range"
               min="0"
               max="100"
               value={volume * 100}
               onChange={handleVolumeChange}
-              className="w-24 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-green-500"
+              className="w-24 accent-green-500"
             />
           </div>
+        </div>
+
+        {/* Barra de progreso */}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            onChange={handleSeek}
+            className="flex-1 accent-green-500"
+          />
+          <span className="text-xs text-gray-400">{formatTime(duration)}</span>
         </div>
       </div>
     </div>

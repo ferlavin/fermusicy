@@ -159,15 +159,16 @@
   border: none;
 }
 
-/* Estilos personalizados para el reproductor */
+/* Estilos personalizados para el reproductor estilo Spotify */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
   cursor: pointer;
+  width: 100%;
 }
 
-/* Track del slider */
+/* Track del slider de progreso */
 input[type="range"]::-webkit-slider-track {
   background: #4d4d4d;
   height: 4px;
@@ -187,29 +188,43 @@ input[type="range"]::-webkit-slider-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #1db954;
+  background: #fff;
   cursor: pointer;
   margin-top: -4px;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #1db954;
+  background: #fff;
   cursor: pointer;
   border: none;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-/* Hover effects */
+/* Mostrar thumb al hacer hover */
 input[type="range"]:hover::-webkit-slider-thumb {
-  background: #1ed760;
+  opacity: 1;
 }
 
 input[type="range"]:hover::-moz-range-thumb {
-  background: #1ed760;
+  opacity: 1;
 }
 
+/* Cambiar color del track al hacer hover */
+input[type="range"]:hover::-webkit-slider-track {
+  background: #1db954;
+}
+
+input[type="range"]:hover::-moz-range-track {
+  background: #1db954;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .player {
     flex-wrap: wrap;
@@ -236,5 +251,15 @@ input[type="range"]:hover::-moz-range-thumb {
   .player-volume {
     order: 4;
     min-width: 120px;
+  }
+
+  .player {
+    height: auto !important;
+    padding: 0.75rem !important;
+  }
+  
+  .player > div {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
   }
 }

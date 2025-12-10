@@ -7,9 +7,7 @@ export default function Player({
   isPlaying, 
   setIsPlaying, 
   onNext, 
-  onPrevious, 
-  hasNext, 
-  hasPrevious
+  onPrev 
 }) {
   const audioRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -82,149 +80,81 @@ export default function Player({
   const progress = (currentTime / duration) * 100 || 0;
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: '#181818',
-      borderTop: '1px solid #282828',
-      padding: '1rem 2rem',
-      zIndex: 1000
-    }}>
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
       />
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        marginBottom: '0.5rem'
-      }}>
-        <img 
-          src={currentSong.cover} 
-          alt={currentSong.title}
-          style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '4px'
-          }}
-        />
-        
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-            {currentSong.title}
+      
+      <div className="max-w-screen-xl mx-auto">
+        {/* Info de la canción */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-4">
+            <img
+              src={currentSong.cover}
+              alt={currentSong.title}
+              className="w-14 h-14 rounded"
+            />
+            <div>
+              <h3 className="text-white font-semibold">{currentSong.title}</h3>
+              <p className="text-gray-400 text-sm">{currentSong.artist}</p>
+            </div>
           </div>
-          <div style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>
-            {currentSong.artist}
+
+          {/* Controles */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={onPrev}
+              className="text-gray-400 hover:text-white transition"
+            >
+              <SkipBack size={24} />
+            </button>
+            
+            <button
+              onClick={togglePlayPause}
+              className="bg-white text-black rounded-full p-2 hover:scale-105 transition"
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+            
+            <button
+              onClick={onNext}
+              className="text-gray-400 hover:text-white transition"
+            >
+              <SkipForward size={24} />
+            </button>
+          </div>
+
+          {/* Control de volumen */}
+          <div className="flex items-center space-x-2">
+            <Volume2 className="text-gray-400" size={20} />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={volume * 100}
+              onChange={handleVolumeChange}
+              className="w-24 accent-green-500"
+            />
           </div>
         </div>
 
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          alignItems: 'center'
-        }}>
-          <button 
-            onClick={onPrevious}
-            disabled={!hasPrevious}
-            style={{
-              ...controlButton,
-              opacity: hasPrevious ? 1 : 0.3,
-              cursor: hasPrevious ? 'pointer' : 'not-allowed'
-            }}
-          >
-            <SkipBack size={20} />
-          </button>
-          
-          <button 
-            onClick={togglePlayPause}
-            style={{
-              ...controlButton,
-              background: '#1DB954',
-              width: '40px',
-              height: '40px'
-            }}
-          >
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-          </button>
-          
-          <button 
-            onClick={onNext}
-            disabled={!hasNext}
-            style={{
-              ...controlButton,
-              opacity: hasNext ? 1 : 0.3,
-              cursor: hasNext ? 'pointer' : 'not-allowed'
-            }}
-          >
-            <SkipForward size={20} />
-          </button>
-        </div>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          width: '150px'
-        }}>
-          <Volume2 size={20} />
+        {/* Barra de progreso */}
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
           <input
             type="range"
             min="0"
             max="100"
-            value={volume * 100}
-            onChange={handleVolumeChange}
-            style={sliderStyle}
+            value={progress}
+            onChange={handleSeek}
+            className="flex-1 accent-green-500"
           />
+          <span className="text-xs text-gray-400">{formatTime(duration)}</span>
         </div>
-      </div>
-
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem'
-      }}>
-        <span style={{ fontSize: '0.75rem', color: '#b3b3b3', minWidth: '40px' }}>
-          {formatTime(currentTime)}
-        </span>
-        
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={progress}
-          onChange={handleSeek}
-          style={{ ...sliderStyle, flex: 1 }}
-        />
-        
-        <span style={{ fontSize: '0.75rem', color: '#b3b3b3', minWidth: '40px' }}>
-          {formatTime(duration)}
-        </span>
       </div>
     </div>
   );
 }
-
-const controlButton = {
-  background: 'transparent',
-  border: 'none',
-  color: 'white',
-  cursor: 'pointer',
-  padding: '0.5rem',
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s'
-};
-
-const sliderStyle = {
-  width: '100%',
-  cursor: 'pointer',
-  accentColor: '#1DB954'
-};

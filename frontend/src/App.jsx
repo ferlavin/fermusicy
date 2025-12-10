@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Player from './components/Player';
 import Footer from './components/Footer';
@@ -20,21 +20,6 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [shuffle, setShuffle] = useState(false);
   const [repeat, setRepeat] = useState('off');
-
-  useEffect(() => {
-    const fetchSongs = async () => {
-      try {
-        const response = await fetch(`${API_URL}/songs`);
-        const data = await response.json();
-        setSongs(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Error fetching songs:', error);
-        setSongs([]);
-      }
-    };
-
-    fetchSongs();
-  }, []);
 
   const handleSongSelect = (song) => {
     const index = songs.findIndex(s => s._id === song._id || s.id === song.id);

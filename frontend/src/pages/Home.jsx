@@ -7,7 +7,7 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);
 
-  const SONGS_URL = '/songs.json';
+  const SONGS_URL = '/api/songs';
 
   useEffect(() => {
     fetch(SONGS_URL)

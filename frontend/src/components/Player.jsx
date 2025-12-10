@@ -82,6 +82,33 @@ function Player({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  useEffect(() => {
+    if (audioRef.current && song) {
+      // Usar el proxy de Vercel en lugar de la URL directa
+      const proxyUrl = `/api/audio?file=${encodeURIComponent(song.file)}`;
+      audioRef.current.src = proxyUrl;
+      
+      if (isPlaying) {
+        audioRef.current.play().catch(error => {
+          console.error('Error al reproducir:', error.message);
+          setIsPlaying(false);
+        });
+      }
+    }
+  }, [song]);
+
+  const handleEnded = () => {
+    if (repeat) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    } else if (hasNext) {
+      setIsPlaying(false);
+      onNext();
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
   if (!song) return null;
 
   return (
@@ -99,17 +126,7 @@ function Player({
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => {
-          if (repeat) {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play();
-          } else if (hasNext) {
-            setIsPlaying(false);
-            onNext();
-          } else {
-            setIsPlaying(false);
-          }
-        }}
+        onEnded={handleEnded}
       />
 
       <div style={{

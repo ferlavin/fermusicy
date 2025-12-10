@@ -7,19 +7,21 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);
 
+  const SONGS_URL = 'https://raw.githubusercontent.com/ferlavin/fermusicy/main/backend/data/songs.json';
+
   useEffect(() => {
-    fetch('http://localhost:3000/api/songs')
+    fetch(SONGS_URL)
       .then(res => res.json())
       .then(data => {
         setSongs(data || []);
         setFilteredSongs(data || []);
       })
       .catch(error => {
-        console.error('Error:', error);
+        console.error('Error cargando canciones:', error);
         setSongs([]);
         setFilteredSongs([]);
       });
-  }, [setSongs]);
+  }, []);
 
   useEffect(() => {
     if (!Array.isArray(songs)) {

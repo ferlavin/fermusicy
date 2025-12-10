@@ -5,6 +5,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'No file specified' });
   }
 
+  // file viene como "/music/nombre.mp3", necesitamos "/public/music/nombre.mp3"
   const audioUrl = `https://raw.githubusercontent.com/ferlavin/fermusicy/main/backend/public${file}`;
   
   try {
@@ -22,6 +23,6 @@ export default async function handler(req, res) {
     
     return res.send(buffer);
   } catch (err) {
-    return res.status(500).json({ error: 'Fetch failed' });
+    return res.status(500).json({ error: err.message });
   }
 }

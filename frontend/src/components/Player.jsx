@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, VolumePlus, Repeat2, Shuffle } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Volume, Repeat2, Shuffle } from 'lucide-react';
 import './Player.css';
 
 export default function Player({ 
@@ -207,7 +207,7 @@ export default function Player({
           />
 
           <button className="volume-btn" onClick={increaseVolume}>
-            <VolumePlus size={18} />
+            <Volume size={18} />
           </button>
         </div>
       </div>

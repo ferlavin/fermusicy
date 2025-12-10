@@ -20,7 +20,6 @@ export default function Player({
       // Usar el proxy de Vercel en lugar de la URL directa
       const proxyUrl = `/api/audio?file=${encodeURIComponent(currentSong.file)}`;
       audioRef.current.src = proxyUrl;
-      audioRef.current.volume = volume;
       
       if (isPlaying) {
         audioRef.current.play().catch(error => {

@@ -116,17 +116,11 @@ function App() {
 
         {currentSong && (
           <Player 
-            song={currentSong}
+            currentSong={currentSong}
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
             onNext={handleNext}
-            onPrevious={handlePrevious}
-            hasNext={songs.length > 0}
-            hasPrevious={songs.length > 0}
-            shuffle={shuffle}
-            setShuffle={setShuffle}
-            repeat={repeat}
-            setRepeat={setRepeat}
+            onPrev={handlePrevious}
           />
         )}       
 

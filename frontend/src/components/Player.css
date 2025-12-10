@@ -159,7 +159,7 @@
   border: none;
 }
 
-/* Estilos personalizados para el reproductor estilo Spotify */
+/* Estilos para sliders estilo Spotify */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -168,7 +168,7 @@ input[type="range"] {
   width: 100%;
 }
 
-/* Track del slider de progreso */
+/* Track del slider */
 input[type="range"]::-webkit-slider-track {
   background: #4d4d4d;
   height: 4px;

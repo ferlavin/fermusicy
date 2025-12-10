@@ -65,79 +65,96 @@ export default function Player({
   const progress = (currentTime / duration) * 100 || 0;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 p-4">
+    <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
       />
-      
-      <div className="max-w-screen-xl mx-auto">
-        {/* Info de la canción */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-4 flex-1">
+
+      {/* Barra de progreso */}
+      <div className="h-1 bg-gray-700 hover:bg-green-500 cursor-pointer group">
+        <div
+          className="h-full bg-green-500 transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="px-6 py-4">
+        {/* Fila principal: Info + Controles + Volumen */}
+        <div className="flex items-center justify-between">
+          {/* Info de la canción - Izquierda */}
+          <div className="flex items-center w-1/4">
             <img
               src={currentSong.cover}
               alt={currentSong.title}
               className="w-14 h-14 rounded"
             />
-            <div className="min-w-0">
-              <h3 className="text-white font-semibold truncate">{currentSong.title}</h3>
-              <p className="text-gray-400 text-sm truncate">{currentSong.artist}</p>
+            <div className="ml-4 min-w-0">
+              <h3 className="text-white font-semibold text-sm truncate">
+                {currentSong.title}
+              </h3>
+              <p className="text-gray-400 text-xs truncate">{currentSong.artist}</p>
             </div>
           </div>
 
-          {/* Controles */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={onPrev}
-              className="text-gray-400 hover:text-white"
-            >
-              <SkipBack size={20} />
-            </button>
-            
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="bg-green-500 text-white rounded-full p-2 hover:bg-green-600"
-            >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-            </button>
-            
-            <button
-              onClick={onNext}
-              className="text-gray-400 hover:text-white"
-            >
-              <SkipForward size={20} />
-            </button>
+          {/* Controles - Centro */}
+          <div className="flex flex-col items-center gap-2 flex-1">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={onPrev}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <SkipBack size={20} fill="currentColor" />
+              </button>
+
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="bg-white text-black rounded-full p-3 hover:scale-110 transition w-10 h-10 flex items-center justify-center"
+              >
+                {isPlaying ? (
+                  <Pause size={20} fill="currentColor" />
+                ) : (
+                  <Play size={20} fill="currentColor" className="ml-0.5" />
+                )}
+              </button>
+
+              <button
+                onClick={onNext}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <SkipForward size={20} fill="currentColor" />
+              </button>
+            </div>
+
+            {/* Tiempo - Debajo de controles */}
+            <div className="flex items-center gap-2 text-xs text-gray-400 w-64">
+              <span className="w-10 text-right">{formatTime(currentTime)}</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={handleSeek}
+                className="flex-1 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-green-500"
+              />
+              <span className="w-10">{formatTime(duration)}</span>
+            </div>
           </div>
 
-          {/* Control de volumen */}
-          <div className="flex items-center space-x-2 ml-4">
-            <Volume2 size={16} className="text-gray-400" />
+          {/* Control de volumen - Derecha */}
+          <div className="flex items-center justify-end gap-2 w-1/4">
+            <Volume2 size={18} className="text-gray-400" />
             <input
               type="range"
               min="0"
               max="100"
               value={volume * 100}
               onChange={handleVolumeChange}
-              className="w-20"
+              className="w-24 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-green-500"
             />
           </div>
-        </div>
-
-        {/* Barra de progreso */}
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-400 w-10">{formatTime(currentTime)}</span>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={progress}
-            onChange={handleSeek}
-            className="flex-1"
-          />
-          <span className="text-xs text-gray-400 w-10">{formatTime(duration)}</span>
         </div>
       </div>
     </div>

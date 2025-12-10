@@ -1,91 +1,26 @@
-import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Repeat, Shuffle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 import './Player.css';
 
-function Player({ 
-  song, 
+export default function Player({ 
+  currentSong, 
   isPlaying, 
   setIsPlaying, 
   onNext, 
   onPrevious, 
   hasNext, 
-  hasPrevious,
-  shuffle,
-  setShuffle,
-  repeat,
-  setRepeat
+  hasPrevious
 }) {
+  const audioRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const audioRef = useRef(null);
 
   // Cargar y reproducir cuando cambia la canción o isPlaying
   useEffect(() => {
-    if (!audioRef.current || !song) return;
-
-    // Usar directamente la URL del archivo
-    audioRef.current.src = song.file;
-    setCurrentTime(0);
-    setDuration(0);
-
-    const onCanPlay = () => {
-      if (isPlaying) {
-        audioRef.current.play().catch(err => console.error('Error al reproducir:', err.message));
-      }
-    };
-
-    audioRef.current.addEventListener('canplay', onCanPlay);
-
-    return () => {
-      audioRef.current.removeEventListener('canplay', onCanPlay);
-    };
-  }, [song]); // 🔑 solo cuando cambia la canción
-
-  useEffect(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.play().catch(err => console.error('Error al reproducir:', err.message));
-    } else {
-      audioRef.current.pause();
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleTimeUpdate = () => {
-    setCurrentTime(audioRef.current.currentTime);
-  };
-
-  const handleLoadedMetadata = () => {
-    setDuration(audioRef.current.duration);
-  };
-
-  const handleSeek = (e) => {
-    const time = parseFloat(e.target.value);
-    setCurrentTime(time);
-    audioRef.current.currentTime = time;
-  };
-
-  const formatTime = (time) => {
-    if (isNaN(time)) return '0:00';
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  useEffect(() => {
-    if (audioRef.current && song) {
+    if (audioRef.current && currentSong) {
       // Usar el proxy de Vercel en lugar de la URL directa
-      const proxyUrl = `/api/audio?file=${encodeURIComponent(song.file)}`;
+      const proxyUrl = `/api/audio?file=${encodeURIComponent(currentSong.file)}`;
       audioRef.current.src = proxyUrl;
       
       if (isPlaying) {
@@ -95,21 +30,56 @@ function Player({
         });
       }
     }
-  }, [song]);
+  }, [currentSong]); // 🔑 solo cuando cambia la canción
 
-  const handleEnded = () => {
-    if (repeat) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    } else if (hasNext) {
-      setIsPlaying(false);
-      onNext();
-    } else {
-      setIsPlaying(false);
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
     }
+  }, [isPlaying]);
+
+  const handleTimeUpdate = () => {
+    setCurrentTime(audioRef.current.currentTime);
   };
 
-  if (!song) return null;
+  const handleLoadedMetadata = () => {
+    setDuration(audioRef.current.duration);
+  };
+
+  const handleEnded = () => {
+    onNext();
+  };
+
+  const handleSeek = (e) => {
+    const newTime = (e.target.value / 100) * duration;
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = e.target.value / 100;
+    setVolume(newVolume);
+    audioRef.current.volume = newVolume;
+  };
+
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  if (!currentSong) return null;
+
+  const progress = (currentTime / duration) * 100 || 0;
 
   return (
     <div style={{
@@ -136,8 +106,8 @@ function Player({
         marginBottom: '0.5rem'
       }}>
         <img 
-          src={song.cover} 
-          alt={song.title}
+          src={currentSong.cover} 
+          alt={currentSong.title}
           style={{
             width: '56px',
             height: '56px',
@@ -147,10 +117,10 @@ function Player({
         
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-            {song.title}
+            {currentSong.title}
           </div>
           <div style={{ fontSize: '0.875rem', color: '#b3b3b3' }}>
-            {song.artist}
+            {currentSong.artist}
           </div>
         </div>
 
@@ -159,18 +129,6 @@ function Player({
           gap: '0.5rem',
           alignItems: 'center'
         }}>
-          <button 
-            onClick={() => setShuffle(!shuffle)}
-            style={{
-              ...controlButton,
-              color: shuffle ? '#1DB954' : 'white',
-              opacity: shuffle ? 1 : 0.7
-            }}
-            title="Aleatorio"
-          >
-            <Shuffle size={18} />
-          </button>
-
           <button 
             onClick={onPrevious}
             disabled={!hasPrevious}
@@ -184,7 +142,7 @@ function Player({
           </button>
           
           <button 
-            onClick={togglePlay}
+            onClick={togglePlayPause}
             style={{
               ...controlButton,
               background: '#1DB954',
@@ -206,18 +164,6 @@ function Player({
           >
             <SkipForward size={20} />
           </button>
-
-          <button 
-            onClick={() => setRepeat(!repeat)}
-            style={{
-              ...controlButton,
-              color: repeat ? '#1DB954' : 'white',
-              opacity: repeat ? 1 : 0.7
-            }}
-            title="Repetir"
-          >
-            <Repeat size={18} />
-          </button>
         </div>
 
         <div style={{
@@ -230,10 +176,9 @@ function Player({
           <input
             type="range"
             min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            max="100"
+            value={volume * 100}
+            onChange={handleVolumeChange}
             style={sliderStyle}
           />
         </div>
@@ -251,8 +196,8 @@ function Player({
         <input
           type="range"
           min="0"
-          max={duration || 0}
-          value={currentTime}
+          max="100"
+          value={progress}
           onChange={handleSeek}
           style={{ ...sliderStyle, flex: 1 }}
         />
@@ -283,5 +228,3 @@ const sliderStyle = {
   cursor: 'pointer',
   accentColor: '#1DB954'
 };
-
-export default Player;

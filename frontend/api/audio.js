@@ -1,28 +1,44 @@
-export default async function handler(req, res) {
+import path from 'path';
+import fs from 'fs';
+
+export default function handler(req, res) {
   const { file } = req.query;
   
   if (!file) {
     return res.status(400).json({ error: 'No file specified' });
   }
 
-  // file viene como "/music/nombre.mp3", necesitamos "/public/music/nombre.mp3"
-  const audioUrl = `https://raw.githubusercontent.com/ferlavin/fermusicy/main/backend/public${file}`;
+  // file viene como "/music/nombre.mp3"
+  // Necesitamos buscar en ../backend/public/music/nombre.mp3
+  const audioPath = path.join(process.cwd(), '..', 'backend', 'public', file);
   
-  try {
-    const upstream = await fetch(audioUrl);
-    if (!upstream.ok) {
-      return res.status(404).json({ error: 'File not found' });
-    }
+  if (!fs.existsSync(audioPath)) {
+    return res.status(404).json({ error: 'File not found', path: audioPath });
+  }
 
-    const arrayBuffer = await upstream.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+  const stat = fs.statSync(audioPath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
 
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 's-maxage=31536000');
-    res.setHeader('Accept-Ranges', 'bytes');
-    
-    return res.send(buffer);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+  if (range) {
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = (end - start) + 1;
+    const file = fs.createReadStream(audioPath, { start, end });
+
+    res.writeHead(206, {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'audio/mpeg',
+    });
+    file.pipe(res);
+  } else {
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': 'audio/mpeg',
+    });
+    fs.createReadStream(audioPath).pipe(res);
   }
 }

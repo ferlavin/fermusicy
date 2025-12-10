@@ -20,6 +20,7 @@ export default function Player({
       // Usar el proxy de Vercel en lugar de la URL directa
       const proxyUrl = `/api/audio?file=${encodeURIComponent(currentSong.file)}`;
       audioRef.current.src = proxyUrl;
+      audioRef.current.volume = volume;
       
       if (isPlaying) {
         audioRef.current.play().catch(error => {
@@ -41,11 +42,15 @@ export default function Player({
   }, [isPlaying]);
 
   const handleTimeUpdate = () => {
-    setCurrentTime(audioRef.current.currentTime);
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
   };
 
   const handleLoadedMetadata = () => {
-    setDuration(audioRef.current.duration);
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
   };
 
   const handleEnded = () => {
@@ -54,14 +59,18 @@ export default function Player({
 
   const handleSeek = (e) => {
     const newTime = (e.target.value / 100) * duration;
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
   };
 
   const handleVolumeChange = (e) => {
     const newVolume = e.target.value / 100;
     setVolume(newVolume);
-    audioRef.current.volume = newVolume;
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
   };
 
   const togglePlayPause = () => {

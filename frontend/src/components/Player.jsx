@@ -74,83 +74,87 @@ export default function Player({
   const progress = (currentTime / duration) * 100 || 0;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 h-24">
+    <div className="player-container">
       <audio
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
       />
-      
-      <div className="h-full px-4 flex items-center justify-between">
-        {/* Izquierda - Info de la canción */}
-        <div className="flex items-center w-1/3">
+
+      {/* Barra de progreso en la parte superior */}
+      <div className="player-progress-bar">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={progress}
+          onChange={handleSeek}
+          className="progress-slider"
+        />
+      </div>
+
+      {/* Contenido principal del player */}
+      <div className="player-content">
+        {/* Izquierda - Información de la canción */}
+        <div className="player-left">
           <img
             src={currentSong.cover}
             alt={currentSong.title}
-            className="w-14 h-14 rounded"
+            className="player-cover"
           />
-          <div className="ml-3">
-            <h3 className="text-white font-semibold text-sm">{currentSong.title}</h3>
-            <p className="text-gray-400 text-xs">{currentSong.artist}</p>
+          <div className="player-info">
+            <h3 className="player-title">{currentSong.title}</h3>
+            <p className="player-artist">{currentSong.artist}</p>
           </div>
         </div>
 
-        {/* Centro - Controles y barra */}
-        <div className="flex flex-col items-center w-2/5 max-w-3xl">
-          {/* Botones de control */}
-          <div className="flex items-center gap-4 mb-2">
-            <button
-              onClick={onPrev}
-              className="text-gray-400 hover:text-white transition"
-            >
+        {/* Centro - Controles */}
+        <div className="player-center">
+          <div className="player-controls">
+            <button className="control-btn" onClick={onPrev}>
               <SkipBack size={20} />
             </button>
             
-            <button
+            <button 
+              className="play-btn" 
               onClick={() => setIsPlaying(!isPlaying)}
-              className="bg-white text-black rounded-full p-2 hover:scale-105 transition"
             >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
             </button>
             
-            <button
-              onClick={onNext}
-              className="text-gray-400 hover:text-white transition"
-            >
+            <button className="control-btn" onClick={onNext}>
               <SkipForward size={20} />
             </button>
           </div>
 
-          {/* Barra de progreso */}
-          <div className="flex items-center gap-2 w-full">
-            <span className="text-xs text-gray-400 min-w-[40px] text-right">
-              {formatTime(currentTime)}
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={handleSeek}
-              className="flex-1"
-            />
-            <span className="text-xs text-gray-400 min-w-[40px]">
-              {formatTime(duration)}
-            </span>
+          {/* Tiempo y barra de progreso debajo */}
+          <div className="player-time-bar">
+            <span className="time">{formatTime(currentTime)}</span>
+            <div className="time-progress">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={handleSeek}
+                className="time-slider"
+              />
+            </div>
+            <span className="time">{formatTime(duration)}</span>
           </div>
         </div>
 
-        {/* Derecha - Control de volumen */}
-        <div className="flex items-center justify-end gap-2 w-1/3">
-          <Volume2 className="text-gray-400" size={20} />
+        {/* Derecha - Volumen */}
+        <div className="player-right">
+          <Volume2 size={18} className="volume-icon" />
           <input
             type="range"
             min="0"
             max="100"
             value={volume * 100}
             onChange={handleVolumeChange}
-            className="w-24"
+            className="volume-slider"
           />
         </div>
       </div>

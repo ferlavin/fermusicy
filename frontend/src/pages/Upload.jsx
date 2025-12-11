@@ -42,28 +42,32 @@ function Upload() {
     setUploading(true);
     setError('');
 
-    const data = new FormData();
-    data.append('audioFile', formData.audioFile);
-    data.append('title', formData.title);
-    data.append('artist', formData.artist);
-    data.append('coverUrl', formData.coverUrl);
-
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: data
-      });
-
-      const contentType = response.headers.get('content-type') || '';
-      let result;
-      if (contentType.includes('application/json')) {
-        result = await response.json();
-      } else {
-        const text = await response.text();
-        result = { error: text.slice(0, 200) };
-      }
-
-      if (response.ok) {
+      // Leer el archivo como base64
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const audioData = event.target.result;
+        
+        // Obtener canciones existentes del localStorage
+        const storedSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
+        
+        // Crear nueva canción
+        const newSong = {
+          id: Date.now(),
+          title: formData.title,
+          artist: formData.artist,
+          duration: '0:00',
+          file: audioData, // base64 del audio
+          cover: formData.coverUrl || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300',
+          isLocal: true // marca para identificar canciones locales
+        };
+        
+        // Agregar a la lista
+        storedSongs.push(newSong);
+        
+        // Guardar en localStorage
+        localStorage.setItem('userSongs', JSON.stringify(storedSongs));
+        
         setSuccess(true);
         setFormData({
           title: '',
@@ -73,14 +77,15 @@ function Upload() {
         });
         document.getElementById('audioFile').value = '';
         
+        // Recargar la página para mostrar la nueva canción
         setTimeout(() => {
-          setSuccess(false);
-        }, 3000);
-      } else {
-        setError(result?.error || result?.message || `Error ${response.status}`);
-      }
+          window.location.href = '/';
+        }, 1500);
+      };
+      
+      reader.readAsDataURL(formData.audioFile);
     } catch (error) {
-      setError('Error de conexión con el servidor');
+      setError('Error al guardar la canción');
       console.error('Error:', error);
     } finally {
       setUploading(false);

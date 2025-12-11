@@ -18,8 +18,13 @@ export default function Player({
 
   useEffect(() => {
     if (audioRef.current && currentSong) {
-      const proxyUrl = `/api/audio?file=${encodeURIComponent(currentSong.file)}`;
-      audioRef.current.src = proxyUrl;
+      // Si es una canción local (base64), usar directamente
+      // Si no, usar el proxy
+      const audioSrc = currentSong.isLocal 
+        ? currentSong.file 
+        : `/api/audio?file=${encodeURIComponent(currentSong.file)}`;
+      
+      audioRef.current.src = audioSrc;
       
       if (isPlaying) {
         audioRef.current.play().catch(error => {

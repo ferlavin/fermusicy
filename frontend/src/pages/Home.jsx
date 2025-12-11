@@ -12,13 +12,23 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
       .then(res => res.json())
       .then(data => {
         console.log('Canciones recibidas:', data);
-        setSongs(data || []);
-        setFilteredSongs(data || []);
+        
+        // Obtener canciones locales del localStorage
+        const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
+        
+        // Combinar canciones del servidor con las locales
+        const allSongs = [...(data || []), ...userSongs];
+        
+        setSongs(allSongs);
+        setFilteredSongs(allSongs);
       })
       .catch(error => {
         console.error('Error cargando canciones:', error);
-        setSongs([]);
-        setFilteredSongs([]);
+        
+        // Si falla, al menos mostrar las locales
+        const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
+        setSongs(userSongs);
+        setFilteredSongs(userSongs);
       });
   }, []);
 

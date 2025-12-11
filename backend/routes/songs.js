@@ -7,11 +7,19 @@ const router = express.Router();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const songsPath = path.join(__dirname, '../data/songs.json');
+
+// En Vercel serverless, leer desde la ruta de solo lectura
+const songsPath = process.env.VERCEL 
+  ? path.join(process.cwd(), 'data/songs.json')
+  : path.join(__dirname, '../data/songs.json');
 
 // GET todas las canciones
 router.get('/', (req, res) => {
   try {
+    if (!fs.existsSync(songsPath)) {
+      return res.status(404).json({ error: 'songs.json no encontrado' });
+    }
+    
     const songs = JSON.parse(fs.readFileSync(songsPath, 'utf8'));
     
     // Agregar la URL completa a cada canción
@@ -22,7 +30,8 @@ router.get('/', (req, res) => {
     
     res.json(songsWithUrls);
   } catch (error) {
-    res.status(500).json({ error: 'Error al leer canciones' });
+    console.error('Error al leer canciones:', error);
+    res.status(500).json({ error: 'Error al leer canciones', message: error.message });
   }
 });
 

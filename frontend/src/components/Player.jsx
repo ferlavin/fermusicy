@@ -13,7 +13,7 @@ export default function Player({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const [repeat, setRepeat] = useState('off'); // off, one, all
+  const [repeat, setRepeat] = useState('off');
   const [shuffle, setShuffle] = useState(false);
 
   useEffect(() => {
@@ -111,7 +111,6 @@ export default function Player({
         onEnded={handleEnded}
       />
 
-      {/* Barra de progreso en la parte superior */}
       <div className="player-progress-bar">
         <input
           type="range"
@@ -123,9 +122,7 @@ export default function Player({
         />
       </div>
 
-      {/* Contenido principal del player */}
       <div className="player-content">
-        {/* Izquierda - Información de la canción */}
         <div className="player-left">
           <img
             src={currentSong.cover}
@@ -138,7 +135,6 @@ export default function Player({
           </div>
         </div>
 
-        {/* Centro - Controles */}
         <div className="player-center">
           <div className="player-controls">
             <button 
@@ -174,7 +170,6 @@ export default function Player({
             </button>
           </div>
 
-          {/* Tiempo y barra de progreso debajo */}
           <div className="player-time-bar">
             <span className="time">{formatTime(currentTime)}</span>
             <div className="time-progress">
@@ -191,7 +186,6 @@ export default function Player({
           </div>
         </div>
 
-        {/* Derecha - Controles de volumen */}
         <div className="player-right">
           <button className="volume-btn" onClick={decreaseVolume}>
             <VolumeX size={18} />

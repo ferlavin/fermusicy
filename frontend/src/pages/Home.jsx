@@ -7,12 +7,11 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSongs, setFilteredSongs] = useState([]);
 
-  const SONGS_URL = '/api/songs';
-
   useEffect(() => {
-    fetch(SONGS_URL)
+    fetch('/api/songs')
       .then(res => res.json())
       .then(data => {
+        console.log('Canciones recibidas:', data);
         setSongs(data || []);
         setFilteredSongs(data || []);
       })

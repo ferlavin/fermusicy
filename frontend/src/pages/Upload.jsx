@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Upload as UploadIcon, Music } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
+
 function Upload() {
   const [formData, setFormData] = useState({
     title: '',
@@ -49,7 +51,7 @@ function Upload() {
     data.append('coverUrl', formData.coverUrl);
 
     try {
-      const response = await fetch('http://localhost:3000/api/upload', {
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: data
       });

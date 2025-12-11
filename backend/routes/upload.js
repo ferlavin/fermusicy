@@ -7,8 +7,8 @@ import fs from 'fs';
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Crear carpeta public si no existe
-const publicPath = path.join(__dirname, '../public');
+// En Vercel (serverless) el FS es de solo lectura salvo /tmp
+const publicPath = process.env.VERCEL ? path.join('/tmp', 'public') : path.join(__dirname, '../public');
 if (!fs.existsSync(publicPath)) {
   fs.mkdirSync(publicPath, { recursive: true });
 }
@@ -49,13 +49,25 @@ router.post('/', upload.single('audioFile'), (req, res) => {
       return res.status(400).json({ error: 'Título y artista son requeridos' });
     }
 
-    // Leer songs.json
-    const songsPath = path.join(__dirname, '../data/songs.json');
+    // Leer/guardar songs.json (en Vercel se usa /tmp; no es persistente)
+    const dataDir = process.env.VERCEL ? path.join('/tmp', 'data') : path.join(__dirname, '../data');
+    const songsPath = path.join(dataDir, 'songs.json');
     let songs = [];
-    
+
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
     if (fs.existsSync(songsPath)) {
       const data = fs.readFileSync(songsPath, 'utf-8');
       songs = JSON.parse(data);
+    } else {
+      // Si no existe en /tmp, intenta cargar copia de solo lectura como base
+      const basePath = path.join(__dirname, '../data/songs.json');
+      if (fs.existsSync(basePath)) {
+        const data = fs.readFileSync(basePath, 'utf-8');
+        songs = JSON.parse(data);
+      }
     }
 
     // Crear nueva canción

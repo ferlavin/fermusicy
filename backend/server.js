@@ -35,6 +35,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'Mini Spotify API funcionando!' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🎵 Servidor corriendo en http://localhost:${PORT}`);
-});
+// Exportar app para serverless (Vercel) y seguir soportando modo standalone
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🎵 Servidor corriendo en http://localhost:${PORT}`);
+  });
+}

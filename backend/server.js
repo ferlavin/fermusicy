@@ -25,11 +25,12 @@ app.use(express.urlencoded({ extended: true }));
 // Servir archivos estáticos desde public
 app.use('/music', express.static(path.join(__dirname, 'public')));
 
-app.use('/api/songs', songsRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/playlists', playlistsRoutes);
+// Las rutas sin /api porque Vercel ya pone /api/ en el path
+app.use('/songs', songsRoutes);
+app.use('/contact', contactRoutes);
+app.use('/upload', uploadRoutes);
+app.use('/auth', authRoutes);
+app.use('/playlists', playlistsRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Mini Spotify API funcionando!' });

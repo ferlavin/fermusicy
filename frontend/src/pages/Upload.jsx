@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Upload as UploadIcon, Music } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
+// Normaliza la URL base del API para evitar /api duplicado
+const rawApiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+const API_BASE = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
 
 function Upload() {
   const [formData, setFormData] = useState({
@@ -51,12 +53,20 @@ function Upload() {
     data.append('coverUrl', formData.coverUrl);
 
     try {
-      const response = await fetch(`${API_URL}/api/upload`, {
+      const response = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
         body: data
       });
 
-      const result = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      let result;
+      if (contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        // Captura HTML de protección/errores y lo muestra como mensaje legible
+        result = { error: text.slice(0, 200) };
+      }
 
       if (response.ok) {
         setSuccess(true);
@@ -72,7 +82,7 @@ function Upload() {
           setSuccess(false);
         }, 3000);
       } else {
-        setError(result.error || 'Error al subir la canción');
+        setError(result?.error || result?.message || `Error ${response.status}`);
       }
     } catch (error) {
       setError('Error de conexión con el servidor');

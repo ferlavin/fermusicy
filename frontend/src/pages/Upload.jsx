@@ -14,14 +14,13 @@ function Upload() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.type !== 'audio/mpeg' && file.type !== 'audio/mp3') {
-        setError('Solo se permiten archivos MP3');
-        return;
-      }
-      setFormData({ ...formData, audioFile: file });
-      setError('');
+    if (!file) return;
+    if (file.type !== 'audio/mpeg' && file.type !== 'audio/mp3') {
+      setError('Solo se permiten archivos MP3');
+      return;
     }
+    setFormData({ ...formData, audioFile: file });
+    setError('');
   };
 
   const handleChange = (e) => {
@@ -33,7 +32,6 @@ function Upload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!formData.audioFile) {
       setError('Por favor seleccioná un archivo MP3');
       return;
@@ -43,31 +41,25 @@ function Upload() {
     setError('');
 
     try {
-      // Leer el archivo como base64
       const reader = new FileReader();
-      reader.onload = async (event) => {
+      reader.onload = (event) => {
         const audioData = event.target.result;
-        
-        // Obtener canciones existentes del localStorage
+
         const storedSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
-        
-        // Crear nueva canción
+
         const newSong = {
           id: Date.now(),
           title: formData.title,
           artist: formData.artist,
           duration: '0:00',
-          file: audioData, // base64 del audio
+          file: audioData,
           cover: formData.coverUrl || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300',
-          isLocal: true // marca para identificar canciones locales
+          isLocal: true
         };
-        
-        // Agregar a la lista
+
         storedSongs.push(newSong);
-        
-        // Guardar en localStorage
         localStorage.setItem('userSongs', JSON.stringify(storedSongs));
-        
+
         setSuccess(true);
         setFormData({
           title: '',
@@ -75,14 +67,14 @@ function Upload() {
           coverUrl: '',
           audioFile: null
         });
-        document.getElementById('audioFile').value = '';
-        
-        // Recargar la página para mostrar la nueva canción
+        const input = document.getElementById('audioFile');
+        if (input) input.value = '';
+
         setTimeout(() => {
           window.location.href = '/';
-        }, 1500);
+        }, 1200);
       };
-      
+
       reader.readAsDataURL(formData.audioFile);
     } catch (error) {
       setError('Error al guardar la canción');
@@ -107,7 +99,6 @@ function Upload() {
           Agregá tu música a Fermusic
         </p>
       </div>
-
       {success && (
         <div style={{
           background: '#1DB954',

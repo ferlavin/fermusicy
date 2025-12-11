@@ -242,7 +242,7 @@ function Playlists() {
         >
           <div
             style={{
-              <div style={{
+              background: '#181818',
               padding: '2rem',
               borderRadius: '12px',
               maxWidth: '500px',

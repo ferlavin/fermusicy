@@ -40,10 +40,6 @@ function SongItem({ song, onClick, isActive, onDelete, onAddedToPlaylist }) {
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (!song.isLocal) {
-      alert('Solo podés eliminar canciones locales.');
-      return;
-    }
     if (!window.confirm(`¿Estás seguro de eliminar "${song.title}"?`)) return;
     setDeleting(true);
     if (onDelete) onDelete(song.id);

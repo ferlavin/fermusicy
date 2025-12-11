@@ -56,18 +56,16 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const handleDeleteSong = (songId) => {
     const target = songs.find(s => s.id === songId);
     if (!target) return;
-    if (!target.isLocal) {
-      alert('Solo podés eliminar canciones locales.');
-      return;
-    }
 
     const remaining = songs.filter(song => song.id !== songId);
     const remainingFiltered = filteredSongs.filter(song => song.id !== songId);
 
-    // Actualiza storage de canciones locales
-    const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
-    const updatedUserSongs = userSongs.filter(s => s.id !== songId);
-    localStorage.setItem('userSongs', JSON.stringify(updatedUserSongs));
+    // Actualiza storage solo si era local
+    if (target.isLocal) {
+      const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
+      const updatedUserSongs = userSongs.filter(s => s.id !== songId);
+      localStorage.setItem('userSongs', JSON.stringify(updatedUserSongs));
+    }
 
     setSongs(remaining);
     setFilteredSongs(remainingFiltered);

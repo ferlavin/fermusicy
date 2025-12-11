@@ -1,97 +1,6 @@
-import { useState } from 'react';
-import { Upload as UploadIcon, Music } from 'lucide-react';
-
-// Normaliza la URL base del API para evitar /api duplicado
-const rawApiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-const API_BASE = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
+import { Music, Github } from 'lucide-react';
 
 function Upload() {
-  const [formData, setFormData] = useState({
-    title: '',
-    artist: '',
-    coverUrl: '',
-    audioFile: null
-  });
-  const [uploading, setUploading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.type !== 'audio/mpeg' && file.type !== 'audio/mp3') {
-        setError('Solo se permiten archivos MP3');
-        return;
-      }
-      setFormData({ ...formData, audioFile: file });
-      setError('');
-    }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.audioFile) {
-      setError('Por favor seleccioná un archivo MP3');
-      return;
-    }
-
-    setUploading(true);
-    setError('');
-
-    const data = new FormData();
-    data.append('audioFile', formData.audioFile);
-    data.append('title', formData.title);
-    data.append('artist', formData.artist);
-    data.append('coverUrl', formData.coverUrl);
-
-    try {
-      const response = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        body: data
-      });
-
-      const contentType = response.headers.get('content-type') || '';
-      let result;
-      if (contentType.includes('application/json')) {
-        result = await response.json();
-      } else {
-        const text = await response.text();
-        // Captura HTML de protección/errores y lo muestra como mensaje legible
-        result = { error: text.slice(0, 200) };
-      }
-
-      if (response.ok) {
-        setSuccess(true);
-        setFormData({
-          title: '',
-          artist: '',
-          coverUrl: '',
-          audioFile: null
-        });
-        document.getElementById('audioFile').value = '';
-        
-        setTimeout(() => {
-          setSuccess(false);
-        }, 3000);
-      } else {
-        setError(result?.error || result?.message || `Error ${response.status}`);
-      }
-    } catch (error) {
-      setError('Error de conexión con el servidor');
-      console.error('Error:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div style={{
       maxWidth: '600px',
@@ -108,177 +17,72 @@ function Upload() {
         </p>
       </div>
 
-      {success && (
-        <div style={{
-          background: '#1DB954',
-          padding: '1rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          textAlign: 'center'
-        }}>
-          ¡Canción subida exitosamente! 🎉
-        </div>
-      )}
-
-      {error && (
-        <div style={{
-          background: '#f44336',
-          padding: '1rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          textAlign: 'center'
-        }}>
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{
+      <div style={{
         background: '#181818',
         padding: '2rem',
-        borderRadius: '8px'
+        borderRadius: '8px',
+        textAlign: 'center'
       }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '0.5rem',
-            color: '#b3b3b3' 
-          }}>
-            Archivo MP3 *
-          </label>
-          <input
-            type="file"
-            id="audioFile"
-            accept="audio/mp3,audio/mpeg"
-            onChange={handleFileChange}
-            required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              background: '#282828',
-              border: '1px solid #404040',
-              borderRadius: '4px',
-              color: 'white',
-              fontSize: '1rem'
-            }}
-          />
-          {formData.audioFile && (
-            <p style={{ 
-              color: '#1DB954', 
-              fontSize: '0.875rem', 
-              marginTop: '0.5rem' 
-            }}>
-              ✓ {formData.audioFile.name}
-            </p>
-          )}
-        </div>
+        <Github size={64} style={{ color: '#1DB954', margin: '0 auto 1rem' }} />
+        
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+          Subí tus canciones al repositorio
+        </h2>
+        
+        <p style={{ color: '#b3b3b3', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+          Para agregar nuevas canciones a Fermusic:
+        </p>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '0.5rem',
-            color: '#b3b3b3' 
-          }}>
-            Título de la canción *
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-            placeholder="Ej: Mi canción favorita"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              background: '#282828',
-              border: '1px solid #404040',
-              borderRadius: '4px',
-              color: 'white',
-              fontSize: '1rem',
-              outline: 'none'
-            }}
-          />
-        </div>
+        <ol style={{ 
+          color: '#b3b3b3', 
+          textAlign: 'left', 
+          lineHeight: '1.8',
+          maxWidth: '400px',
+          margin: '0 auto'
+        }}>
+          <li>Subí tu archivo MP3 a <code style={{ 
+            background: '#282828', 
+            padding: '2px 6px', 
+            borderRadius: '4px',
+            color: '#1DB954'
+          }}>backend/public/</code></li>
+          <li>Agregá los datos de la canción a <code style={{ 
+            background: '#282828', 
+            padding: '2px 6px', 
+            borderRadius: '4px',
+            color: '#1DB954'
+          }}>backend/data/songs.json</code></li>
+          <li>Hacé commit y push a GitHub</li>
+          <li>¡Listo! La canción aparecerá automáticamente</li>
+        </ol>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '0.5rem',
-            color: '#b3b3b3' 
-          }}>
-            Artista *
-          </label>
-          <input
-            type="text"
-            name="artist"
-            value={formData.artist}
-            onChange={handleChange}
-            required
-            placeholder="Ej: Nombre del artista"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              background: '#282828',
-              border: '1px solid #404040',
-              borderRadius: '4px',
-              color: 'white',
-              fontSize: '1rem',
-              outline: 'none'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ 
-            display: 'block', 
-            marginBottom: '0.5rem',
-            color: '#b3b3b3' 
-          }}>
-            URL de la portada (opcional)
-          </label>
-          <input
-            type="url"
-            name="coverUrl"
-            value={formData.coverUrl}
-            onChange={handleChange}
-            placeholder="https://ejemplo.com/imagen.jpg"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              background: '#282828',
-              border: '1px solid #404040',
-              borderRadius: '4px',
-              color: 'white',
-              fontSize: '1rem',
-              outline: 'none'
-            }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={uploading}
+        <a 
+          href="https://github.com/ferlavin/fermusicy" 
+          target="_blank"
+          rel="noopener noreferrer"
           style={{
-            background: uploading ? '#666' : '#1DB954',
+            background: '#1DB954',
             color: 'white',
             border: 'none',
             padding: '0.75rem 2rem',
             borderRadius: '24px',
             fontSize: '1rem',
             fontWeight: 'bold',
-            cursor: uploading ? 'not-allowed' : 'pointer',
-            display: 'flex',
+            cursor: 'pointer',
+            display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            width: '100%',
-            justifyContent: 'center',
-            transition: 'all 0.2s'
+            marginTop: '2rem',
+            textDecoration: 'none',
+            transition: 'transform 0.2s'
           }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
-          <UploadIcon size={18} />
-          {uploading ? 'Subiendo...' : 'Subir canción'}
-        </button>
-      </form>
+          <Github size={18} />
+          Ir al Repositorio
+        </a>
+      </div>
     </div>
   );
 }

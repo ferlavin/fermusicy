@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_URL } from '../config';
 import './PlaylistDetail.css';
 
 function PlaylistDetail({ setCurrentSong, setIsPlaying, currentSong }) {
@@ -16,18 +15,16 @@ function PlaylistDetail({ setCurrentSong, setIsPlaying, currentSong }) {
   }, [id]);
 
   const fetchPlaylistDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_URL}/playlists/${id}`);
-      if (!response.ok) throw new Error('Error al cargar la playlist');
-      const data = await response.json();
-      setPlaylist(data);
-      setSongs(data.canciones || []); // <- usa 'canciones' que viene del backend
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    const stored = JSON.parse(localStorage.getItem('userPlaylists') || '[]');
+    const found = stored.find(p => String(p.id) === String(id));
+    if (!found) {
+      setError('Playlist no encontrada');
+    } else {
+      setPlaylist(found);
+      setSongs(found.canciones || []);
     }
+    setLoading(false);
   };
 
   const handlePlay = (song) => {
@@ -35,16 +32,13 @@ function PlaylistDetail({ setCurrentSong, setIsPlaying, currentSong }) {
     setIsPlaying(true);
   };
 
-  const handleRemoveSong = async (songId) => {
-    try {
-      const response = await fetch(`${API_URL}/playlists/${id}/songs/${songId}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Error al eliminar la canción');
-      fetchPlaylistDetails();
-    } catch (err) {
-      alert(err.message);
-    }
+  const handleRemoveSong = (songId) => {
+    const updatedPlaylists = JSON.parse(localStorage.getItem('userPlaylists') || '[]');
+    const idx = updatedPlaylists.findIndex(p => String(p.id) === String(id));
+    if (idx === -1) return;
+    updatedPlaylists[idx].canciones = (updatedPlaylists[idx].canciones || []).filter(s => s.id !== songId);
+    localStorage.setItem('userPlaylists', JSON.stringify(updatedPlaylists));
+    setSongs(updatedPlaylists[idx].canciones || []);
   };
 
   if (loading) {

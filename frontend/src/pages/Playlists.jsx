@@ -17,52 +17,33 @@ function Playlists() {
   }, []);
 
   const fetchPlaylists = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/playlists');
-      const data = await response.json();
-      setPlaylists(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error:', error);
-      setLoading(false);
-    }
+    // Cargar playlists desde localStorage
+    const stored = JSON.parse(localStorage.getItem('userPlaylists') || '[]');
+    setPlaylists(stored);
+    setLoading(false);
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/playlists', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newPlaylist)
-      });
+    const created = {
+      id: Date.now(),
+      nombre: newPlaylist.nombre || 'Sin título',
+      descripcion: newPlaylist.descripcion || '',
+      canciones: []
+    };
 
-      if (response.ok) {
-        setShowModal(false);
-        setNewPlaylist({ nombre: '', descripcion: '' });
-        fetchPlaylists();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    const updated = [...playlists, created];
+    localStorage.setItem('userPlaylists', JSON.stringify(updated));
+    setPlaylists(updated);
+    setShowModal(false);
+    setNewPlaylist({ nombre: '', descripcion: '' });
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar esta playlist?')) return;
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/playlists/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        fetchPlaylists();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    const updated = playlists.filter(pl => pl.id !== id);
+    localStorage.setItem('userPlaylists', JSON.stringify(updated));
+    setPlaylists(updated);
   };
 
   if (loading) {
@@ -237,7 +218,7 @@ function Playlists() {
                 fontSize: '0.875rem',
                 color: '#b3b3b3'
               }}>
-                {playlist.total_canciones || 0} {playlist.total_canciones === 1 ? 'canción' : 'canciones'}
+                {(playlist.canciones?.length || 0)} {(playlist.canciones?.length === 1) ? 'canción' : 'canciones'}
               </p>
             </div>
           ))}
@@ -261,7 +242,7 @@ function Playlists() {
         >
           <div
             style={{
-              background: '#282828',
+              <div style={{
               padding: '2rem',
               borderRadius: '12px',
               maxWidth: '500px',

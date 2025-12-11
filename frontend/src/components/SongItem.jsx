@@ -9,46 +9,45 @@ function SongItem({ song, onClick, isActive, onDelete, onAddedToPlaylist }) {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    // Carga playlists una sola vez
-    fetch('http://localhost:3000/api/playlists')
-      .then(r => r.json())
-      .then(setPlaylists)
-      .catch(() => setPlaylists([]));
+    // Carga playlists desde localStorage
+    const stored = JSON.parse(localStorage.getItem('userPlaylists') || '[]');
+    setPlaylists(stored);
   }, []);
 
   const handleAddToPlaylist = async (playlistId, e) => {
     e.stopPropagation();
     setAdding(true);
-    try {
-      const resp = await fetch(`http://localhost:3000/api/playlists/${playlistId}/songs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cancionId: song.id })
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'No se pudo agregar');
-      setShowPicker(false);
-      if (onAddedToPlaylist) onAddedToPlaylist(); // 🔁 refresca en el padre
-    } catch (err) {
-      alert(err.message);
-    } finally {
+    const stored = JSON.parse(localStorage.getItem('userPlaylists') || '[]');
+    const idx = stored.findIndex(p => String(p.id) === String(playlistId));
+    if (idx === -1) {
+      alert('Playlist no encontrada');
       setAdding(false);
+      return;
     }
+
+    const canciones = stored[idx].canciones || [];
+    const exists = canciones.some(c => c.id === song.id);
+    if (!exists) {
+      canciones.push(song);
+      stored[idx].canciones = canciones;
+      localStorage.setItem('userPlaylists', JSON.stringify(stored));
+      setPlaylists(stored);
+      if (onAddedToPlaylist) onAddedToPlaylist();
+    }
+    setShowPicker(false);
+    setAdding(false);
   };
 
   const handleDelete = async (e) => {
     e.stopPropagation();
+    if (!song.isLocal) {
+      alert('Solo podés eliminar canciones locales.');
+      return;
+    }
     if (!window.confirm(`¿Estás seguro de eliminar "${song.title}"?`)) return;
     setDeleting(true);
-    try {
-      const response = await fetch(`http://localhost:3000/api/songs/${song.id}`, { method: 'DELETE' });
-      if (response.ok && onDelete) onDelete(song.id);
-      else alert('Error al eliminar la canción');
-    } catch {
-      alert('Error al eliminar la canción');
-    } finally {
-      setDeleting(false);
-    }
+    if (onDelete) onDelete(song.id);
+    setDeleting(false);
   };
 
   return (

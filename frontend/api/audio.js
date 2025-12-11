@@ -1,7 +1,12 @@
-import path from 'path';
-import fs from 'fs';
-
 export default async function handler(req, res) {
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const { file } = req.query;
   
   if (!file) {
@@ -15,8 +20,9 @@ export default async function handler(req, res) {
   const audioUrl = `https://raw.githubusercontent.com/ferlavin/fermusicy/main/backend/public/${fileName}`;
   
   try {
-    const upstream = await fetch(audioUrl);
+    const upstream = await fetch(audioUrl, { cache: 'no-store' });
     if (!upstream.ok) {
+      console.error('Audio not found:', audioUrl);
       return res.status(404).json({ error: 'File not found' });
     }
 
@@ -29,6 +35,7 @@ export default async function handler(req, res) {
     
     return res.send(buffer);
   } catch (err) {
+    console.error('Audio fetch error:', err);
     return res.status(500).json({ error: err.message });
   }
 }

@@ -13,19 +13,29 @@ function Contact() {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:3000/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      // Obtener mensajes existentes de localStorage
+      const existingMessages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
       
-      if (response.ok) {
-        setSubmitted(true);
-        setFormData({ name: '', email: '', message: '' });
-        setTimeout(() => setSubmitted(false), 3000);
-      }
+      // Crear nuevo mensaje
+      const newMessage = {
+        id: existingMessages.length > 0 ? Math.max(...existingMessages.map(m => m.id)) + 1 : 1,
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        date: new Date().toISOString(),
+        read: false
+      };
+      
+      // Agregar el nuevo mensaje
+      existingMessages.push(newMessage);
+      
+      // Guardar en localStorage
+      localStorage.setItem('contactMessages', JSON.stringify(existingMessages));
+      
+      // Mostrar confirmación
+      setSubmitted(true);
+      setFormData({ name: '', email: '', message: '' });
+      setTimeout(() => setSubmitted(false), 3000);
     } catch (error) {
       console.error('Error:', error);
     }

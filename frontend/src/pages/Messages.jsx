@@ -11,8 +11,9 @@ function Messages() {
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/contact');
-      const data = await response.json();
+      const data = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      // Ordenar por fecha (más recientes primero)
+      data.sort((a, b) => new Date(b.date) - new Date(a.date));
       setMessages(data);
       setLoading(false);
     } catch (error) {
@@ -25,13 +26,9 @@ function Messages() {
     if (!window.confirm('¿Estás seguro de eliminar este mensaje?')) return;
     
     try {
-      const response = await fetch(`http://localhost:3000/api/contact/${id}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        setMessages(messages.filter(m => m.id !== id));
-      }
+      const updatedMessages = messages.filter(m => m.id !== id);
+      localStorage.setItem('contactMessages', JSON.stringify(updatedMessages));
+      setMessages(updatedMessages);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -39,15 +36,11 @@ function Messages() {
 
   const handleMarkAsRead = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/contact/${id}/read`, {
-        method: 'PATCH'
-      });
-      
-      if (response.ok) {
-        setMessages(messages.map(m => 
-          m.id === id ? { ...m, read: true } : m
-        ));
-      }
+      const updatedMessages = messages.map(m => 
+        m.id === id ? { ...m, read: true } : m
+      );
+      localStorage.setItem('contactMessages', JSON.stringify(updatedMessages));
+      setMessages(updatedMessages);
     } catch (error) {
       console.error('Error:', error);
     }

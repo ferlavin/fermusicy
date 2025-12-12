@@ -8,28 +8,41 @@ function Home({ setCurrentSong, setIsPlaying, currentSong, songs = [], setSongs 
   const [filteredSongs, setFilteredSongs] = useState([]);
 
   useEffect(() => {
-    fetch('/api/songs')
-      .then(res => res.json())
-      .then(data => {
-        console.log('Canciones recibidas:', data);
-        
+    const loadSongs = async () => {
+      try {
         // Obtener canciones locales del localStorage
         const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
         
-        // Combinar canciones del servidor con las locales
-        const allSongs = [...(data || []), ...userSongs];
-        
-        setSongs(allSongs);
-        setFilteredSongs(allSongs);
-      })
-      .catch(error => {
+        // Intentar cargar canciones del servidor
+        try {
+          const res = await fetch('/api/songs');
+          if (res.ok) {
+            const data = await res.json();
+            console.log('Canciones recibidas:', data);
+            
+            // Combinar canciones del servidor con las locales
+            const allSongs = [...(data || []), ...userSongs];
+            setSongs(allSongs);
+            setFilteredSongs(allSongs);
+          } else {
+            // Si falla la respuesta, usar solo locales
+            setSongs(userSongs);
+            setFilteredSongs(userSongs);
+          }
+        } catch (fetchError) {
+          // Si falla el fetch (sin servidor), usar solo locales
+          console.log('Modo local: usando solo canciones de localStorage');
+          setSongs(userSongs);
+          setFilteredSongs(userSongs);
+        }
+      } catch (error) {
         console.error('Error cargando canciones:', error);
-        
-        // Si falla, al menos mostrar las locales
-        const userSongs = JSON.parse(localStorage.getItem('userSongs') || '[]');
-        setSongs(userSongs);
-        setFilteredSongs(userSongs);
-      });
+        setSongs([]);
+        setFilteredSongs([]);
+      }
+    };
+    
+    loadSongs();
   }, []);
 
   useEffect(() => {
